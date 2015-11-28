@@ -32,23 +32,7 @@ namespace IdentityServer4.AccessTokenValidation
         /// <value>
         ///   <c>true</c> if access token is preserved; otherwise, <c>false</c>.
         /// </value>
-        public bool PreserveAccessToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scope name for accessing the introspection endpoint.
-        /// </summary>
-        /// <value>
-        /// The scope name.
-        /// </value>
-        public string ScopeName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scope secret for accessing the introspection endpoint.
-        /// </summary>
-        /// <value>
-        /// The scope secret.
-        /// </value>
-        public string ScopeSecret { get; set; }
+        public bool PreserveAccessToken { get; set; }   
 
         /// <summary>
         /// Gets or sets the validation mode.
@@ -65,5 +49,7 @@ namespace IdentityServer4.AccessTokenValidation
         /// The duration of the validation result cache. The default is 5 minutes.
         /// </value>
         public TimeSpan ValidationResultCacheDuration { get; set; }
+
+        public IntrospectionEndpointOptions IntrospectionOptions { get; set; }
     }
 }
