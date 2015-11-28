@@ -1,43 +1,21 @@
-﻿using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+﻿using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Builder;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.WebEncoders;
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace IdentityServer4.AccessTokenValidation
 {
-    public class IdentityServerBearerTokenValidationMiddleware
+    public class IdentityServerBearerTokenValidationMiddleware : AuthenticationMiddleware<IdentityServerBearerTokenOptions>
     {
-        private readonly RequestDelegate _next;
-        private readonly IdentityServerBearerTokenOptions _options;
-        private readonly ILogger<IdentityServerBearerTokenValidationMiddleware> _logger;
-
-        public IdentityServerBearerTokenValidationMiddleware(RequestDelegate next, IdentityServerBearerTokenOptions options, ILogger<IdentityServerBearerTokenValidationMiddleware> logger)
+        public IdentityServerBearerTokenValidationMiddleware(RequestDelegate next, IdentityServerBearerTokenOptions options, IUrlEncoder urlEncoder, ILoggerFactory loggerFactory)
+            : base(next, options, loggerFactory, urlEncoder)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _next = next;
-            _options = options;
-            _logger = logger;
         }
 
-        public Task Invoke(HttpContext context)
+        protected override AuthenticationHandler<IdentityServerBearerTokenOptions> CreateHandler()
         {
-            return _next.Invoke(context);
+            throw new NotImplementedException();
         }
     }
 }
