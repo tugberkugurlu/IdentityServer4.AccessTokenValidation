@@ -6,7 +6,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace IdentityServer4.AccessTokenValidation
@@ -20,17 +22,6 @@ namespace IdentityServer4.AccessTokenValidation
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             ValidateRequirements();
-
-            // ctor
-
-            var resultCache = Context.RequestServices.GetService<IValidationResultCache>();
-            var logger = Context.RequestServices.GetService<ILogger<IntrospectionEndpointHandler>>();
-            var introspectionEndpoint = $"{Options.Authority.EnsureTrailingSlash()}connect/introspect";
-            var handler = Options.BackchannelHttpHandler ?? _handler.Value;
-
-            IntrospectionClient introspectionClient = string.IsNullOrEmpty(Options.ScopeName) == false
-                ? new IntrospectionClient(introspectionEndpoint, Options.ScopeName, Options.ScopeSecret ?? string.Empty, handler)
-                : new IntrospectionClient(introspectionEndpoint, innerHttpMessageHandler: handler);
 
             // handle
 
@@ -56,7 +47,7 @@ namespace IdentityServer4.AccessTokenValidation
                     }
                     else
                     {
-                        result = await HandleImplAsync(token, logger);
+                        result = await HandleImplAsync(token, cache, logger);
                     }
                 }
             }
@@ -64,16 +55,72 @@ namespace IdentityServer4.AccessTokenValidation
             return result;
         }
 
-        private async Task<AuthenticateResult> HandleImplAsync(string token, ILogger logger)
-        {
-            throw new NotImplementedException();
-        }
-
         private void ValidateRequirements()
         {
             if (string.IsNullOrWhiteSpace(Options.Authority))
             {
                 throw new InvalidOperationException("Authority must be set to use validation endpoint.");
+            }
+        }
+
+        private async Task<AuthenticateResult> HandleImplAsync(string token)
+        {
+            var cache = Context.RequestServices.GetService<IValidationResultCache>();
+
+            if(cache != null)
+            {
+                var cachedClaims = await cache.GetAsync(token);
+                if (cachedClaims != null)
+                {
+                }
+            }
+        }
+
+        private async Task<AuthenticateResult> HandleRemoteAsync(string token, IValidationResultCache cache)
+        {
+            var introspectionEndpoint = $"{Options.Authority.EnsureTrailingSlash()}connect/introspect";
+            var handler = Options.BackchannelHttpHandler ?? _handler.Value;
+
+            IntrospectionClient introspectionClient = string.IsNullOrEmpty(Options.ScopeName) == false
+                ? new IntrospectionClient(introspectionEndpoint, Options.ScopeName, Options.ScopeSecret ?? string.Empty, handler)
+                : new IntrospectionClient(introspectionEndpoint, innerHttpMessageHandler: handler);
+
+            IntrospectionResponse response = null;
+            try
+            {
+                response = await introspectionClient.SendAsync(new IntrospectionRequest { Token = token });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Exception while contacting introspection endpoint.", ex);
+            }
+
+            if(response != null)
+            {
+                if (response.IsError)
+                {
+                    Logger.LogError("Error returned from introspection endpoint: {introspectionRequestError}.", response.Error);
+                }
+                else if (!response.IsActive)
+                {
+                    Logger.LogVerbose("Inactive token: {inactiveToken}", token);
+                }
+                else
+                {
+                    var claims = new List<Claim>();
+                    foreach (var claim in response.Claims)
+                    {
+                        if (!string.Equals(claim.Item1, "active", StringComparison.Ordinal))
+                        {
+                            claims.Add(new Claim(claim.Item1, claim.Item2));
+                        }
+                    }
+
+                    if(cache != null)
+                    {
+                        await cache.AddAsync(token, claims, Options.ValidationResultCacheDuration);
+                    }
+                }
             }
         }
     }
