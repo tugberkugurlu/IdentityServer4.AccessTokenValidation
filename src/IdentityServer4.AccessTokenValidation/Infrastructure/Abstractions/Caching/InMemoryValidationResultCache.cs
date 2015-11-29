@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Security.Claims;
 using System.Linq;
 using IdentityModel;
+using Microsoft.AspNet.Authentication;
 
 namespace IdentityServer4.AccessTokenValidation
 {
@@ -12,9 +13,9 @@ namespace IdentityServer4.AccessTokenValidation
     {
         private const string CacheKeyPrefix = "identityserver4:token:";
         private readonly IMemoryCache _cache;
-        private readonly IClock _clock;
+        private readonly ISystemClock _clock;
 
-        public InMemoryValidationResultCache(IMemoryCache cache, IClock clock)
+        public InMemoryValidationResultCache(IMemoryCache cache, ISystemClock clock)
         {
             if (cache == null)
             {

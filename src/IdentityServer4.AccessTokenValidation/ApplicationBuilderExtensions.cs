@@ -7,7 +7,7 @@ namespace IdentityServer4.AccessTokenValidation
 {
     public static class ApplicationBuilderExtensions
     {
-        public static IApplicationBuilder UseIdentityServerBearerTokenAuthentication(this IApplicationBuilder app, IdentityServerBearerTokenOptions options)
+        public static IApplicationBuilder UseIdentityServerBearerTokenAuthentication(this IApplicationBuilder app, IdentityServerBearerTokenOptions options, IntrospectionEndpointOptions introspectionEndpointOptions)
         {
             if (app == null)
             {
@@ -19,6 +19,12 @@ namespace IdentityServer4.AccessTokenValidation
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (introspectionEndpointOptions == null)
+            {
+                throw new ArgumentNullException(nameof(introspectionEndpointOptions));
+            }
+
+            // TODO: Not sure what to do here.
             switch (options.ValidationMode)
             {
                 case ValidationMode.Both:
@@ -34,17 +40,11 @@ namespace IdentityServer4.AccessTokenValidation
                     throw new Exception("ValidationMode has invalid value");
             }
 
-            if(options.IntrospectionOptions != null)
-            {
-                app.UseMiddleware<IntrospectionEndpointMiddleware>(options.IntrospectionOptions);
-            }
+            app.UseMiddleware<IntrospectionEndpointMiddleware>(introspectionEndpointOptions);
 
             if (options.AdditionalScopes.Any())
             {
-                IEnumerable<string> scopes = options.IntrospectionOptions != null
-                    ? options.AdditionalScopes.Concat(new[] { options.IntrospectionOptions.ScopeName })
-                    : options.AdditionalScopes;
-
+                IEnumerable<string> scopes = options.AdditionalScopes.Concat(new[] { introspectionEndpointOptions.ScopeName });
                 app.UseMiddleware<ScopeRequirementMiddleware>(scopes);
             }
 

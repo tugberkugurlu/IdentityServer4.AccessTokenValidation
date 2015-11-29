@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNet.Authentication;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace IdentityServer4.AccessTokenValidation
@@ -17,7 +18,7 @@ namespace IdentityServer4.AccessTokenValidation
         {
             services.AddCaching();
             services.AddAuthentication();
-            services.TryAdd(ServiceDescriptor.Singleton<IClock, SystemClock>());
+            services.TryAdd(ServiceDescriptor.Singleton<ISystemClock, SystemClock>());
             services.TryAdd(ServiceDescriptor.Singleton<IValidationResultCache, InMemoryValidationResultCache>());
 
             return services;
