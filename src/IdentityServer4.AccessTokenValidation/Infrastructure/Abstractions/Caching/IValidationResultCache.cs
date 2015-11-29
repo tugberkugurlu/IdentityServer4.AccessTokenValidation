@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace IdentityServer4.AccessTokenValidation
         /// <param name="token">The token.</param>
         /// <param name="claims">The claims.</param>
         /// <returns></returns>
-        Task AddAsync(string token, IEnumerable<Claim> claims);
+        Task AddAsync(string token, IEnumerable<Claim> claims, TimeSpan cacheDuration);
 
         /// <summary>
         /// Retrieves a validation result

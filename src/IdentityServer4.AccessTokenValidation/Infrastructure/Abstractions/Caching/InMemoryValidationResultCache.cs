@@ -11,17 +11,11 @@ namespace IdentityServer4.AccessTokenValidation
     public class InMemoryValidationResultCache : IValidationResultCache
     {
         private const string CacheKeyPrefix = "identityserver4:token:";
-        private readonly IdentityServerBearerTokenOptions _options;
         private readonly IMemoryCache _cache;
         private readonly IClock _clock;
 
-        public InMemoryValidationResultCache(IdentityServerBearerTokenOptions options, IMemoryCache cache, IClock clock)
+        public InMemoryValidationResultCache(IMemoryCache cache, IClock clock)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             if (cache == null)
             {
                 throw new ArgumentNullException(nameof(cache));
@@ -32,15 +26,14 @@ namespace IdentityServer4.AccessTokenValidation
                 throw new ArgumentNullException(nameof(clock));
             }
 
-            _options = options;
             _cache = cache;
             _clock = clock;
         }
 
-        public Task AddAsync(string token, IEnumerable<Claim> claims)
+        public Task AddAsync(string token, IEnumerable<Claim> claims, TimeSpan cacheDuration)
         {
             var expiryClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.Expiration);
-            var cacheExpirySetting = _clock.UtcNow.Add(_options.ValidationResultCacheDuration);
+            var cacheExpirySetting = _clock.UtcNow.Add(cacheDuration);
 
             if (expiryClaim != null)
             {
