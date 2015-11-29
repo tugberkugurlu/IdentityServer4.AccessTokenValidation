@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace IdentityServer4.AccessTokenValidation
 {
-    public static class ApplicationBuilderExtensions
+    public static class AccessTokenValidationApplicationBuilderExtensions
     {
         public static IApplicationBuilder UseIdentityServerBearerTokenAuthentication(this IApplicationBuilder app, IdentityServerBearerTokenOptions options, IntrospectionEndpointOptions introspectionEndpointOptions)
         {
