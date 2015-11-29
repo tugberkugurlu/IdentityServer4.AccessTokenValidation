@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNet.Authentication;
-using Microsoft.Extensions.DependencyInjection;
+﻿using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNet.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace IdentityServer4.AccessTokenValidation
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extension methods for setting up access token validation services in an <see cref="IServiceCollection" />.
